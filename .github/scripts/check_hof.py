@@ -1,7 +1,7 @@
 import json, os, re, subprocess, sys
 from datetime import date, datetime
 
-PATH = "hall-of-fame.json"
+PATH = "hallOfFame.json"
 FIELDS = {"name", "github", "date"}
 base_sha = os.environ["BASE_SHA"]
 author = os.environ["PR_AUTHOR"]
