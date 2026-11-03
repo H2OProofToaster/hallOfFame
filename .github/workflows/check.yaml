@@ -1,0 +1,47 @@
+name: Check and merge hall of fame entry
+
+on:
+  pull_request_target:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: hall-of-fame-merge
+  cancel-in-progress: false
+
+jobs:
+  check-and-merge:
+    runs-on: ubuntu-latest
+    steps:
+      # Trusted code: your base branch, including the check script
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Untrusted PR contents (merged result), checked out as data only
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          path: pr
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate entry
+        working-directory: pr
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+        run: python3 ../.github/scripts/check_hof.py
+
+      - name: Merge PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --squash \
+            --match-head-commit ${{ github.event.pull_request.head.sha }}
