@@ -28,6 +28,7 @@ jobs:
           path: pr
           fetch-depth: 0
           persist-credentials: false
+          allow-unsafe-pr-checkout: true
 
       - name: Validate entry
         working-directory: pr
